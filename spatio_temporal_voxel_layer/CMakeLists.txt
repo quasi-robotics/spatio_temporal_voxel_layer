@@ -71,8 +71,6 @@ set(dependencies
 
 set(library_name spatio_temporal_voxel_layer_core)
 
-add_definitions(${EIGEN3_DEFINITIONS})
-
 set(srv_files "srv/SaveGrid.srv")
 rosidl_generate_interfaces(${PROJECT_NAME}
   ${srv_files}
