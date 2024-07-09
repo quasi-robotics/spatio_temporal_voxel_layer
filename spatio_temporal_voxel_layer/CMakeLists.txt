@@ -78,6 +78,9 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 )
 rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
 
+# Get a linker error when there are undefined symbols
+add_link_options(-Wl,--no-undefined)
+
 include_directories(
     include
     ${BOOST_INCLUDE_DIRS}
