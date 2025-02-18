@@ -57,7 +57,11 @@
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 // TF
 #include "tf2_ros/buffer.h"
+#if __has_include("message_filters/subscriber.hpp")
+#include "message_filters/subscriber.hpp"
+#else
 #include "message_filters/subscriber.h"
+#endif
 // msgs
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "geometry_msgs/msg/quaternion.hpp"
