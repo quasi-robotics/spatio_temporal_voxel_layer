@@ -49,9 +49,11 @@ namespace volume_grid
 SpatioTemporalVoxelGrid::SpatioTemporalVoxelGrid(
   rclcpp::Clock::SharedPtr clock,
   const float & voxel_size, const double & background_value,
-  const int & decay_model, const double & voxel_decay, const bool & pub_voxels)
+  const int & decay_model, const double & voxel_decay, const double & voxel_distance_decay,
+  const bool & pub_voxels)
 : _clock(clock), _decay_model(decay_model), _background_value(background_value),
-  _voxel_size(voxel_size), _voxel_decay(voxel_decay), _pub_voxels(pub_voxels),
+  _voxel_size(voxel_size), _voxel_decay(voxel_decay), _voxel_distance_decay(voxel_distance_decay),
+  _pub_voxels(pub_voxels),
   _grid_points(std::make_unique<std::vector<geometry_msgs::msg::Point32>>()),
   _cost_map(new std::unordered_map<occupany_cell, uint>)
 /*****************************************************************************/
@@ -95,7 +97,7 @@ void SpatioTemporalVoxelGrid::InitializeGrid(void)
 /*****************************************************************************/
 void SpatioTemporalVoxelGrid::ClearFrustums(
   const std::vector<observation::MeasurementReading> & clearing_readings,
-  std::unordered_set<occupany_cell> & cleared_cells)
+  std::unordered_set<occupany_cell> & cleared_cells, openvdb::Vec3d & robot_pose_world)
 /*****************************************************************************/
 {
   boost::unique_lock<boost::mutex> lock(_grid_lock);
@@ -113,7 +115,7 @@ void SpatioTemporalVoxelGrid::ClearFrustums(
   std::vector<frustum_model> obs_frustums;
 
   if (clearing_readings.size() == 0) {
-    TemporalClearAndGenerateCostmap(obs_frustums, cleared_cells);
+    TemporalClearAndGenerateCostmap(obs_frustums, cleared_cells, robot_pose_world);
     return;
   }
 
@@ -142,13 +144,14 @@ void SpatioTemporalVoxelGrid::ClearFrustums(
     frustum->TransformModel();
     obs_frustums.emplace_back(frustum, it->_decay_acceleration);
   }
-  TemporalClearAndGenerateCostmap(obs_frustums, cleared_cells);
+  TemporalClearAndGenerateCostmap(obs_frustums, cleared_cells, robot_pose_world);
 }
 
 /*****************************************************************************/
 void SpatioTemporalVoxelGrid::TemporalClearAndGenerateCostmap(
   std::vector<frustum_model> & frustums,
-  std::unordered_set<occupany_cell> & cleared_cells)
+  std::unordered_set<occupany_cell> & cleared_cells,
+  openvdb::Vec3d & robot_pose_world)
 /*****************************************************************************/
 {
   // sample time once for all clearing readings
@@ -156,6 +159,7 @@ void SpatioTemporalVoxelGrid::TemporalClearAndGenerateCostmap(
 
   // check each point in the grid for inclusion in a frustum
   openvdb::DoubleGrid::ValueOnCIter cit_grid = _grid->cbeginValueOn();
+  double voxel_distance_decay_squared = _voxel_distance_decay * _voxel_distance_decay;
   for (; cit_grid.test(); ++cit_grid) {
     const openvdb::Coord pt_index(cit_grid.getCoord());
     const openvdb::Vec3d pose_world = this->IndexToWorld(pt_index);
@@ -163,6 +167,23 @@ void SpatioTemporalVoxelGrid::TemporalClearAndGenerateCostmap(
     std::vector<frustum_model>::iterator frustum_it = frustums.begin();
     bool frustum_cycle = false;
     bool cleared_point = false;
+
+    // spatial filtering
+    if (_voxel_distance_decay > 0.0) {
+      // check squared distance from robot to voxel
+      double distance_2d_squared =
+        (pose_world[0] - robot_pose_world[0]) * (pose_world[0] - robot_pose_world[0]) +
+        (pose_world[1] - robot_pose_world[1]) * (pose_world[1] - robot_pose_world[1]);
+
+      if (distance_2d_squared > voxel_distance_decay_squared) {
+        cleared_point = true;
+        if (!this->ClearGridPoint(pt_index)) {
+          std::cout << "Failed to clear point." << std::endl;
+        }
+        cleared_cells.insert(occupany_cell(pose_world[0], pose_world[1]));
+        continue;
+      }
+    }
 
     const double time_since_marking = cur_time - cit_grid.getValue();
     const double base_duration_to_decay = GetTemporalClearingDuration(
