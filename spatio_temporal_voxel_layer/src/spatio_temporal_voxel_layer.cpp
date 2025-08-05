@@ -289,8 +289,13 @@ void SpatioTemporalVoxelLayer::onInitialize(void)
 
     // create a callback for the topic
     if (data_type == "LaserScan") {
+      #if RCLCPP_VERSION_GTE(29, 0, 0)
       auto sub = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::LaserScan,rclcpp_lifecycle::LifecycleNode>>(
         node, topic, custom_qos_profile, sub_opt);
+      #else
+      auto sub = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::LaserScan,rclcpp_lifecycle::LifecycleNode>>(
+        std::static_pointer_cast<rclcpp_lifecycle::LifecycleNode>(node), topic, custom_qos_profile.get_rmw_qos_profile(), sub_opt);
+      #endif
       sub->unsubscribe();
 
       std::shared_ptr<tf2_ros::MessageFilter<sensor_msgs::msg::LaserScan>
@@ -317,8 +322,13 @@ void SpatioTemporalVoxelLayer::onInitialize(void)
 
       _observation_notifiers.back()->setTolerance(rclcpp::Duration::from_seconds(0.05));
     } else if (data_type == "PointCloud2") {
+      #if RCLCPP_VERSION_GTE(29, 0, 0)
       auto sub = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::PointCloud2,rclcpp_lifecycle::LifecycleNode>>(
         node, topic, custom_qos_profile, sub_opt);
+      #else
+      auto sub = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::PointCloud2,rclcpp_lifecycle::LifecycleNode>>(
+        std::static_pointer_cast<rclcpp_lifecycle::LifecycleNode>(node), topic, custom_qos_profile.get_rmw_qos_profile(), sub_opt);
+      #endif
       sub->unsubscribe();
 
       std::shared_ptr<tf2_ros::MessageFilter<sensor_msgs::msg::PointCloud2>
