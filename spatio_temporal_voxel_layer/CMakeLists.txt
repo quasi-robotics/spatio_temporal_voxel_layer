@@ -123,6 +123,8 @@ target_link_libraries(${library_name}
   nav2_ros_common::nav2_ros_common
 )
 
+ament_target_dependencies(${library_name} pcl_conversions)
+
 # Get a linker error when there are undefined symbols
 target_link_options(${library_name} PRIVATE -Wl,--no-undefined)
 
