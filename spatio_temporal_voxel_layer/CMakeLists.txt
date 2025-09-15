@@ -126,7 +126,12 @@ target_link_libraries(${library_name}
 ament_target_dependencies(${library_name} pcl_conversions)
 
 # Get a linker error when there are undefined symbols
-target_link_options(${library_name} PRIVATE -Wl,--no-undefined)
+if(APPLE)
+  # macOS linker flag for AppleClang
+  target_link_options(${library_name} PRIVATE -Wl,-undefined,error)
+else()
+  target_link_options(${library_name} PRIVATE -Wl,--no-undefined)
+endif()
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
