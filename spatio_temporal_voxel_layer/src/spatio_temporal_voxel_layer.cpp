@@ -165,6 +165,8 @@ void SpatioTemporalVoxelLayer::onInitialize(void)
 
   RCLCPP_INFO(logger_, "%s created underlying voxel grid.", getName().c_str());
 
+  auto message_filter_node = std::make_shared<rclcpp::Node>(std::string(node->get_name())+"_message_filters", node->get_namespace(), node->get_node_options());
+
   std::stringstream ss(_topics_string);
   std::string source;
   while (ss >> source) {
@@ -301,7 +303,7 @@ void SpatioTemporalVoxelLayer::onInitialize(void)
       std::shared_ptr<tf2_ros::MessageFilter<sensor_msgs::msg::LaserScan>
       > filter(new tf2_ros::MessageFilter<sensor_msgs::msg::LaserScan>(
           *sub, *tf_, _global_frame, 50,
-                 node->get_node_logging_interface(),
+                 message_filter_node->get_node_logging_interface(),
                  node->get_node_clock_interface(),
                  tf2::durationFromSec(transform_tolerance)));
 
@@ -334,7 +336,7 @@ void SpatioTemporalVoxelLayer::onInitialize(void)
       std::shared_ptr<tf2_ros::MessageFilter<sensor_msgs::msg::PointCloud2>
       > filter(new tf2_ros::MessageFilter<sensor_msgs::msg::PointCloud2>(
           *sub, *tf_, _global_frame, 50,
-                 node->get_node_logging_interface(),
+                 message_filter_node->get_node_logging_interface(),
                  node->get_node_clock_interface(),
                  tf2::durationFromSec(transform_tolerance)));
       filter->registerCallback(
