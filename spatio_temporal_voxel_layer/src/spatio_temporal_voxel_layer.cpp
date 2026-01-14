@@ -165,8 +165,11 @@ void SpatioTemporalVoxelLayer::onInitialize(void)
 
   RCLCPP_INFO(logger_, "%s created underlying voxel grid.", getName().c_str());
 
-  auto message_filter_node = std::make_shared<rclcpp::Node>(std::string(node->get_name())+"_message_filters", node->get_namespace(), node->get_node_options());
-
+  std::vector<std::string> message_filter_node_arguments = node->get_node_options().arguments();
+  std::string new_name = std::string(node->get_name())+"_"+name_+"_mf";
+  nav2::replaceOrAddArgument(message_filter_node_arguments, "-r", "__node", new_name + ":" + "__node:=" + new_name);
+  auto message_filter_node = std::make_shared<rclcpp::Node>(new_name, node->get_namespace(), rclcpp::NodeOptions().arguments(message_filter_node_arguments));
+  
   std::stringstream ss(_topics_string);
   std::string source;
   while (ss >> source) {
