@@ -36,7 +36,6 @@ find_package(openvdb_vendor REQUIRED)
 
 remove_definitions(-DDISABLE_LIBUSB-1.0)
 find_package(Eigen3 REQUIRED)
-find_package(Boost REQUIRED COMPONENTS thread OPTIONAL_COMPONENTS system)
 
 find_package(PCL REQUIRED COMPONENTS filters common)
 if(NOT "${PCL_LIBRARIES}" STREQUAL "")
@@ -85,10 +84,8 @@ rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_t
 
 include_directories(
     include
-    ${BOOST_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIRS}
     ${PCL_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
     ${pcl_conversions_INCLUDE_DIRS}
 )
 
@@ -102,10 +99,8 @@ add_library(${library_name} SHARED
 )
 
 target_link_libraries(${library_name} "${cpp_typesupport_target}")
-target_compile_definitions(${library_name} PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 
 target_link_libraries(${library_name}
-  ${Boost_LIBRARIES}
   ${EIGEN3_LIBRARIES}
   ${PCL_LIBRARIES}
   OpenVDB::openvdb
