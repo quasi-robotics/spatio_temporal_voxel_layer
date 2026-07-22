@@ -293,7 +293,7 @@ void SpatioTemporalVoxelLayer::onInitialize(void)
     // create a callback for the topic
     if (data_type == "LaserScan") {
       #if RCLCPP_VERSION_GTE(29, 0, 0)
-      auto sub = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::LaserScan,rclcpp_lifecycle::LifecycleNode>>(
+      auto sub = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::LaserScan>>(
         node, topic, custom_qos_profile, sub_opt);
       #else
       auto sub = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::LaserScan,rclcpp_lifecycle::LifecycleNode>>(
@@ -301,12 +301,9 @@ void SpatioTemporalVoxelLayer::onInitialize(void)
       #endif
       sub->unsubscribe();
 
-      std::shared_ptr<tf2_ros::MessageFilter<sensor_msgs::msg::LaserScan>
-      > filter(new tf2_ros::MessageFilter<sensor_msgs::msg::LaserScan>(
+      auto filter =  std::make_shared<nav2::MessageFilter<sensor_msgs::msg::LaserScan>>(
           *sub, *tf_, _global_frame, 50,
-                 message_filter_node->get_node_logging_interface(),
-                 node->get_node_clock_interface(),
-                 tf2::durationFromSec(transform_tolerance)));
+          message_filter_node->get_node_logging_interface(), node->get_node_clock_interface(), tf2::durationFromSec(transform_tolerance));
 
       if (inf_is_valid) {
         filter->registerCallback(
@@ -326,7 +323,7 @@ void SpatioTemporalVoxelLayer::onInitialize(void)
       _observation_notifiers.back()->setTolerance(rclcpp::Duration::from_seconds(0.05));
     } else if (data_type == "PointCloud2") {
       #if RCLCPP_VERSION_GTE(29, 0, 0)
-      auto sub = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::PointCloud2,rclcpp_lifecycle::LifecycleNode>>(
+      auto sub = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::PointCloud2>>(
         node, topic, custom_qos_profile, sub_opt);
       #else
       auto sub = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::PointCloud2,rclcpp_lifecycle::LifecycleNode>>(
@@ -334,12 +331,10 @@ void SpatioTemporalVoxelLayer::onInitialize(void)
       #endif
       sub->unsubscribe();
 
-      std::shared_ptr<tf2_ros::MessageFilter<sensor_msgs::msg::PointCloud2>
-      > filter(new tf2_ros::MessageFilter<sensor_msgs::msg::PointCloud2>(
+      auto filter =  std::make_shared<nav2::MessageFilter<sensor_msgs::msg::PointCloud2>>(
           *sub, *tf_, _global_frame, 50,
-                 message_filter_node->get_node_logging_interface(),
-                 node->get_node_clock_interface(),
-                 tf2::durationFromSec(transform_tolerance)));
+          message_filter_node->get_node_logging_interface(), node->get_node_clock_interface(), tf2::durationFromSec(transform_tolerance));
+
       filter->registerCallback(
         std::bind(
           &SpatioTemporalVoxelLayer::PointCloud2Callback, this, _1,
@@ -463,7 +458,7 @@ void SpatioTemporalVoxelLayer::BufferEnablerCallback(
   const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
   std::shared_ptr<std_srvs::srv::SetBool::Response> response,
   const std::shared_ptr<buffer::MeasurementBuffer> buffer,
-  const std::shared_ptr<message_filters::SubscriberBase<rclcpp_lifecycle::LifecycleNode>> &subcriber
+  const std::shared_ptr<message_filters::SubscriberBase> &subcriber
   )
 /*****************************************************************************/
 {

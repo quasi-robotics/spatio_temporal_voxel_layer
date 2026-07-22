@@ -72,8 +72,7 @@
 // projector
 #include "laser_geometry/laser_geometry.hpp"
 // tf
-#include "tf2_ros/transform_listener.hpp"
-#include "tf2_ros/message_filter.hpp"
+#include "nav2_ros_common/tf2_factories.hpp"
 #include "message_filters/subscriber.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 
@@ -82,7 +81,7 @@ namespace spatio_temporal_voxel_layer
 
 // conveniences for line lengths
 typedef std::vector<
-  std::shared_ptr<message_filters::SubscriberBase<rclcpp_lifecycle::LifecycleNode>>
+  std::shared_ptr<message_filters::SubscriberBase>
   >::iterator observation_subscribers_iter;
 typedef std::vector<std::shared_ptr<buffer::MeasurementBuffer>>::iterator observation_buffers_iter;
 
@@ -155,7 +154,7 @@ private:
     const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
     std::shared_ptr<std_srvs::srv::SetBool::Response> response,
     const std::shared_ptr<buffer::MeasurementBuffer> buffer,
-    const std::shared_ptr<message_filters::SubscriberBase<rclcpp_lifecycle::LifecycleNode>>
+    const std::shared_ptr<message_filters::SubscriberBase>
       & subcriber
     );
 
@@ -167,7 +166,7 @@ private:
     dynamicParametersCallback(std::vector<rclcpp::Parameter> parameters);
 
   laser_geometry::LaserProjection _laser_projector;
-  std::vector<std::shared_ptr<message_filters::SubscriberBase<rclcpp_lifecycle::LifecycleNode>>>
+  std::vector<std::shared_ptr<message_filters::SubscriberBase>>
     _observation_subscribers;
   std::vector<std::shared_ptr<tf2_ros::MessageFilterBase>> _observation_notifiers;
   std::vector<std::shared_ptr<buffer::MeasurementBuffer>> _observation_buffers;
