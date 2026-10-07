@@ -458,7 +458,11 @@ void SpatioTemporalVoxelLayer::BufferEnablerCallback(
   const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
   std::shared_ptr<std_srvs::srv::SetBool::Response> response,
   const std::shared_ptr<buffer::MeasurementBuffer> buffer,
+#if RCLCPP_VERSION_GTE(30, 0, 0)
   const std::shared_ptr<message_filters::SubscriberBase> &subcriber
+#else
+  const std::shared_ptr<message_filters::SubscriberBase<>> &subcriber
+#endif
   )
 /*****************************************************************************/
 {

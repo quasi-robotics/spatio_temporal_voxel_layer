@@ -81,7 +81,11 @@ namespace spatio_temporal_voxel_layer
 
 // conveniences for line lengths
 typedef std::vector<
+#if RCLCPP_VERSION_GTE(30, 0, 0)
   std::shared_ptr<message_filters::SubscriberBase>
+#else
+  std::shared_ptr<message_filters::SubscriberBase<>>
+#endif
   >::iterator observation_subscribers_iter;
 typedef std::vector<std::shared_ptr<buffer::MeasurementBuffer>>::iterator observation_buffers_iter;
 
@@ -154,7 +158,11 @@ private:
     const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
     std::shared_ptr<std_srvs::srv::SetBool::Response> response,
     const std::shared_ptr<buffer::MeasurementBuffer> buffer,
+#if RCLCPP_VERSION_GTE(30, 0, 0)
     const std::shared_ptr<message_filters::SubscriberBase>
+#else
+    const std::shared_ptr<message_filters::SubscriberBase<>>
+#endif
       & subcriber
     );
 
@@ -166,7 +174,11 @@ private:
     dynamicParametersCallback(std::vector<rclcpp::Parameter> parameters);
 
   laser_geometry::LaserProjection _laser_projector;
+#if RCLCPP_VERSION_GTE(30, 0, 0)
   std::vector<std::shared_ptr<message_filters::SubscriberBase>>
+#else
+  std::vector<std::shared_ptr<message_filters::SubscriberBase<>>>
+#endif
     _observation_subscribers;
   std::vector<std::shared_ptr<tf2_ros::MessageFilterBase>> _observation_notifiers;
   std::vector<std::shared_ptr<buffer::MeasurementBuffer>> _observation_buffers;
