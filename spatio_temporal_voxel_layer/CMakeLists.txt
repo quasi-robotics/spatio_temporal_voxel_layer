@@ -114,11 +114,9 @@ target_link_libraries(${library_name}
   tf2_sensor_msgs::tf2_sensor_msgs
   nav2_costmap_2d::nav2_costmap_2d_core
   laser_geometry::laser_geometry
-  #pcl_conversions::pcl_conversions
+  pcl_conversions::pcl_conversions
   nav2_ros_common::nav2_ros_common
 )
-
-ament_target_dependencies(${library_name} pcl_conversions)
 
 # Get a linker error when there are undefined symbols
 if(APPLE)
